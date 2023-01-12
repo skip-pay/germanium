@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='django-germanium',
-    version='2.3.6',
+    name='skip-django-germanium',
+    version='2.3.6.1',
     description='Helpful methods for Python Selenium and REST testing',
     author='Lukas Rychtecky, Lubos Matl',
     author_email='lukas.rychtecky@gmail.com, matllubos@gmail.com',
+    url='https://github.com/skip-pay/germanium',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
