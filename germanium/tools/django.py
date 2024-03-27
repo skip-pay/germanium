@@ -6,6 +6,10 @@ from django.core.management import call_command
 from django.db import DEFAULT_DB_ALIAS, connections
 
 
+RUN_PRE_COMMIT = "run_pre_commit"
+RUN_ON_COMMIT = "run_on_commit"
+
+
 class CatchCallbacks:
 
     def __init__(self, connection, callback_name):
@@ -28,11 +32,18 @@ class CatchCallbacks:
     def get_callbacks(self, start_count=None):
         start_count = self._start_count if start_count is None else start_count
 
-        if self._end_count == None:
+        if self._end_count is None:
             watching_callbacks = self._watching_callbacks[start_count:]
         else:
             watching_callbacks = self._watching_callbacks[start_count:self._end_count]
-        return [callbacks[-1] for callbacks in watching_callbacks]
+
+        callbacks = []
+        for watching_callback in watching_callbacks:
+            if self._callback_name == RUN_PRE_COMMIT:
+                callbacks.append(watching_callback[-1])
+            elif self._callback_name == RUN_ON_COMMIT:
+                callbacks.append(watching_callback[-2])
+        return callbacks
 
     def execute(self):
         if self._executed:
@@ -60,8 +71,8 @@ class CatchCallbacks:
 class CommitCallbacks:
 
     def __init__(self, connection):
-        self.pre_commit = CatchCallbacks(connection, 'run_pre_commit')
-        self.on_commit = CatchCallbacks(connection, 'run_on_commit')
+        self.pre_commit = CatchCallbacks(connection, RUN_PRE_COMMIT)
+        self.on_commit = CatchCallbacks(connection, RUN_ON_COMMIT)
 
     def end(self):
         self.pre_commit.end()
