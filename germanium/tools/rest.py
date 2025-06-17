@@ -13,7 +13,7 @@ def assert_valid_JSON(data, msg='Json is not valid'):
     """
     try:
         json.loads(force_str(data))
-    except:
+    except Exception:
         fail(msg)
 
 
