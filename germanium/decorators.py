@@ -70,6 +70,11 @@ def fill_data_with_source(data, named_data):
         return data
     if isinstance(data, dict):
         return {fill_data_with_source(k, named_data): fill_data_with_source(v, named_data) for k, v in data.items()}
+    elif isinstance(data, tuple) and hasattr(data, '_fields'):
+        # named tuples require special handling
+        return type(data)(
+            *(fill_data_with_source(v, named_data) for v in data)
+        )
     elif isinstance(data, (list, tuple, set)):
         return type(data)(
             (fill_data_with_source(v, named_data) for v in data)
@@ -314,7 +319,7 @@ def data_consumer(callable_or_property_or_str, *data_provider_args, **data_provi
                 data = callable_or_property
 
             if isinstance(data, (list, tuple, set, types.GeneratorType)):
-                for value in data:
+                for value in fill_data_with_source(data, named_data):
                     value = _rename_output_data(value, output_name)
                     if not isinstance(value, NamedTestData):
                         value = list(last_args) + (list(value) if isinstance(value, (list, tuple, set)) else [value])
