@@ -1,6 +1,6 @@
 import types
-
-from collections.abc import Iterable
+import re
+from collections.abc import Iterable, Sequence,Mapping
 from functools import wraps
 
 from inspect import isclass, isfunction, ismethod, getfullargspec, signature
@@ -93,12 +93,59 @@ class NamedTestData:
         return list(self.data.items())[0][1]
 
     def get(self, k):
-        return self.data[k]
+        """
+        Retrieves the object of the given name from the named data, or a sub-property of that object.
 
-    def __getattr__(self, item):
-        if item in self.data:
-            return self.data[item]
-        raise AttributeError(f'NamedTestData object has no attribute "{item}"')
+        Args:
+            k: key of the named data; this could also include reference to a sub-property of the named object
+               by using `.` or `__` as the delimiter; examples:
+               1. `a.b.c` where `b` is an object - it would try to retrieve data named `a` (main object),
+                  then its property `b`, and then finally return `c` as the property of `b`
+               2. `a.b.c` where `b` is a mapping - it would try to retrieve data named `a` (main object),
+                  then its property `b`, and then finally return `c` as the key of `b`
+               3. `a.b.0` where `b` is a sequence (excluding strings) - it would try to retrieve data named
+                  `a` (main object), then its property `b`, and then finally return its first value
+
+        Returns:
+            retrieved data
+
+        Raises:
+            KeyError: if the main object does not exist in the data
+            IndexError: if the main object does exist in the data, but the object (or its property) is
+                        a sequence that does not have any value at the given index
+            AttributeError: if the main object does exist in the data, but the object (or its property):
+                            a) is an object and does not have the requested property
+                            b) is a mapping and does not have the requested key
+        """
+        parts = re.split(r'(?:\.|__)', k)
+
+        try:
+            value = self.data[parts[0]]
+        except KeyError:
+            raise KeyError(f'NamedTestData object has no attribute "{parts[0]}"')
+
+        for index, part in enumerate(parts[1:]):
+            name = '.'.join(parts[:index + 1])
+
+            try:
+                if isinstance(value, Mapping):
+                    value = value[part]
+                elif isinstance(value, Sequence) and not isinstance(value, str) and part.isnumeric():
+                    value = value[int(part)]
+                else:
+                    value = getattr(value, part)
+            except IndexError:
+                raise IndexError(f'NamedTestData object "{name}" has no value at index "{part}"')
+            except (AttributeError, KeyError):
+                raise AttributeError(f'NamedTestData object "{name}" has no attribute "{part}"')
+
+        return value
+
+    def __getattr__(self, k):
+        try:
+            return self.get(k)
+        except (AttributeError, IndexError, KeyError) as e:
+            raise AttributeError(str(e)) from e
 
 
 class NamedDataSource:
