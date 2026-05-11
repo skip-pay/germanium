@@ -288,6 +288,9 @@ def data_consumer(callable_or_property_or_str, *data_provider_args, **data_provi
     """
 
     output_name = data_provider_kwargs.pop('_output_name', None)
+    if isinstance(callable_or_property_or_str, types.GeneratorType):
+        callable_or_property_or_str = list(callable_or_property_or_str)
+
     def test_decorator(fn):
         def get_data(self, last_data, named_data=None):
             last_args = last_data if last_data else ()
