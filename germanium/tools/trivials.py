@@ -30,6 +30,8 @@ from nose.tools import (
     assert_is_none,
     assert_is_not_none,
     assert_logs,
+    assert_regex,
+    assert_not_regex,
 )
 
 from germanium import config
