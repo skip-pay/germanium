@@ -1,40 +1,48 @@
 """
-Provides Nose and Django test case assert functions
+Provides unittest and Django test case assert functions
 """
 
+import unittest
 from contextlib import contextmanager
 
-from nose.tools import (
-    assert_equal,
-    assert_true,
-    assert_false,
-    assert_in,
-    assert_not_in,
-    assert_raises,
-    assert_not_equal,
-    assert_is,
-    assert_is_instance,
-    assert_greater,
-    assert_less,
-    assert_almost_equal,
-    assert_not_almost_equal,
-    assert_greater_equal,
-    assert_less_equal,
-    assert_not_is_instance,
-    assert_list_equal,
-    assert_tuple_equal,
-    assert_set_equal,
-    assert_dict_equal,
-    assert_sequence_equal,
-    assert_multi_line_equal,
-    assert_is_none,
-    assert_is_not_none,
-    assert_logs,
-    assert_regex,
-    assert_not_regex,
-)
-
 from germanium import config
+
+
+class _AssertionsTestCase(unittest.TestCase):
+    def runTest(self):
+        pass
+
+
+# assert* methods of unittest.TestCase under pep8 names, bound to one shared instance so maxDiff applies to all of them
+_test_case = _AssertionsTestCase()
+
+assert_equal = _test_case.assertEqual
+assert_true = _test_case.assertTrue
+assert_false = _test_case.assertFalse
+assert_in = _test_case.assertIn
+assert_not_in = _test_case.assertNotIn
+assert_raises = _test_case.assertRaises
+assert_not_equal = _test_case.assertNotEqual
+assert_is = _test_case.assertIs
+assert_is_instance = _test_case.assertIsInstance
+assert_greater = _test_case.assertGreater
+assert_less = _test_case.assertLess
+assert_almost_equal = _test_case.assertAlmostEqual
+assert_not_almost_equal = _test_case.assertNotAlmostEqual
+assert_greater_equal = _test_case.assertGreaterEqual
+assert_less_equal = _test_case.assertLessEqual
+assert_not_is_instance = _test_case.assertNotIsInstance
+assert_list_equal = _test_case.assertListEqual
+assert_tuple_equal = _test_case.assertTupleEqual
+assert_set_equal = _test_case.assertSetEqual
+assert_dict_equal = _test_case.assertDictEqual
+assert_sequence_equal = _test_case.assertSequenceEqual
+assert_multi_line_equal = _test_case.assertMultiLineEqual
+assert_is_none = _test_case.assertIsNone
+assert_is_not_none = _test_case.assertIsNotNone
+assert_logs = _test_case.assertLogs
+assert_regex = _test_case.assertRegex
+assert_not_regex = _test_case.assertNotRegex
 
 
 if config.TURN_OFF_MAX_DIFF:
