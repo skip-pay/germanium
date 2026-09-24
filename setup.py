@@ -19,7 +19,6 @@ setup(
         'django>=4.2',
         'PyVirtualDisplay>=0.1.2',
         'selenium>=2.37.2',
-        'pynose>=1.5.4',
         'responses>=0.5.1',
     ],
     include_package_data=True,
