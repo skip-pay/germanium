@@ -11,6 +11,9 @@ from django.db.models import Model
 from django.db.models.fields import DateField, DateTimeField
 from django.utils.functional import cached_property
 
+# Django 6.1 renamed transaction.savepoint() to savepoint_create() and deprecated the old name.
+savepoint_create = getattr(transaction, 'savepoint_create', transaction.savepoint)
+
 
 def is_iterable(data):
     return isinstance(data, Iterable) and not isinstance(data, str)
@@ -231,7 +234,7 @@ def call_test_method(method, self, data, named_data, use_rollback=False):
 
     is_data_consumer = getattr(method, 'is_data_consumer', False)
     if use_rollback:
-        sid = transaction.savepoint()
+        sid = savepoint_create()
     try:
         if is_data_consumer:
             method(self, data=data, named_data=named_data)
