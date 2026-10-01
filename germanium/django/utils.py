@@ -1,3 +1,4 @@
+import django
 from django.core.management import call_command
 from django.conf import settings
 from django.db import connections
@@ -19,12 +20,16 @@ def setup_databases(verbosity, interactive, keepdb=False, debug_sql=False, paral
             # Actually create the database for the first connection
             if first_alias is None:
                 first_alias = alias
+                # Django 6.0 deprecated the serialize argument of create_test_db(), the database is serialized
+                # explicitly instead, before the global fixtures are loaded.
                 connection.creation.create_test_db(
                     verbosity=verbosity,
                     autoclobber=not interactive,
                     keepdb=keepdb,
-                    serialize=connection.settings_dict['TEST'].get('SERIALIZE', True),
+                    **({} if django.VERSION >= (6, 0) else {'serialize': False}),
                 )
+                if connection.settings_dict['TEST'].get('SERIALIZE', True):
+                    connection._test_serialized_contents = connection.creation.serialize_db_to_string()
 
                 test_fixtures = getattr(settings, 'GERMANIUM_GLOBAL_FIXTURES', {}).get(alias, None)
                 if test_fixtures:
